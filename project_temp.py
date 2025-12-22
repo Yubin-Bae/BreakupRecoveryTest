@@ -8,16 +8,13 @@ from datetime import datetime
 import altair as alt
 import base64
 
-
 DB_PATH = "DB.xlsx" 
 INTRO_GIF = "intro_raw.gif"
 # BACK_IMG = "background.png"
 
-
 BAND_1 = range(0, 7)      # 0~6
 BAND_2 = range(7, 10)     # 7~9
 BAND_3 = range(10, 16)    # 10~15
-
 
 def rerun():
     if hasattr(st, "rerun"):
@@ -25,19 +22,12 @@ def rerun():
     else:
         st.experimental_rerun()
 
-
 def sid():
     ts = datetime.now().strftime("%Y%m%d_%H%M%S")
     r = "".join(random.choices(string.ascii_uppercase + string.digits, k=6))
     return f"{ts}_{r}"
 
-
-
-
-
-
 def set_background(img_path: str):
-
     with open(img_path, "rb") as f:
         b64 = base64.b64encode(f.read()).decode("utf-8")
 
@@ -63,7 +53,6 @@ def set_background(img_path: str):
         unsafe_allow_html=True,
     )
 
-
 def apply_css():
     st.markdown(
         """
@@ -79,9 +68,6 @@ def apply_css():
     )
     # set_background(BACK_IMG)
 
-
-
-
 @st.cache_data
 def load_questions(path) -> pd.DataFrame:
     df = pd.read_excel(path, sheet_name="questions")
@@ -95,13 +81,11 @@ def load_questions(path) -> pd.DataFrame:
     df["score2"] = pd.to_numeric(df["score2"], errors="coerce").fillna(0).astype(int)
     return df
 
-
 def load_responses(path) -> pd.DataFrame:
     try:
         return pd.read_excel(path, sheet_name="responses")
     except Exception:
         return pd.DataFrame()
-
 
 def save_responses(path, responses_df: pd.DataFrame, questions_df: pd.DataFrame):
     """
@@ -111,7 +95,6 @@ def save_responses(path, responses_df: pd.DataFrame, questions_df: pd.DataFrame)
         questions_df.to_excel(writer, index=False, sheet_name="questions")
         responses_df.to_excel(writer, index=False, sheet_name="responses")
 
-
 def bold_quotes(text) -> str:
     if text is None:
         return ""
@@ -120,7 +103,6 @@ def bold_quotes(text) -> str:
     s = re.sub(r'“([^”]+)”', r'“<strong>\1</strong>”', s)
     return s.replace("\n", "<br>")
 
-
 def type_by_score(score: int) -> str:
     if score in BAND_1:
         return "🔴감정 재접속형"
@@ -128,7 +110,6 @@ def type_by_score(score: int) -> str:
         return "🟠감정 잔존형"
     else:
         return "🟢이별 종료형"
-
 
 def init():
     st.session_state.setdefault("page", "intro")
@@ -141,7 +122,6 @@ def init():
     st.session_state.setdefault("answers", [])
     st.session_state.setdefault("saved", False)
 
-
 def reset(to_page="intro"):
     st.session_state["q_idx"] = 0
     st.session_state["score"] = 0
@@ -150,13 +130,11 @@ def reset(to_page="intro"):
     st.session_state["session_id"] = ""
     st.session_state["page"] = to_page
 
-
 def intro_page():
     st.markdown("")
     st.markdown("")
     st.markdown("")
     st.markdown("")
-
 
     c1, c2, c3 = st.columns([1.3, 3, 1])
     with c2:
@@ -172,7 +150,6 @@ def intro_page():
         INTRO_GIF,
         use_container_width=True
     )
-
 
 def info_page():
     st.header("기본 정보 입력")
@@ -193,7 +170,6 @@ def info_page():
         st.session_state["page"] = "guide"
         rerun()
 
-
 def guide_page():
     st.header("시작 전 안내")
     st.markdown("**지금부터 전 애인의 메시지가 다시 도착합니다.**")
@@ -210,7 +186,6 @@ def guide_page():
         reset("q")
         st.session_state["session_id"] = sid()
         rerun()
-
 
 def question_page(qdf: pd.DataFrame):
     total = len(qdf)
@@ -245,14 +220,12 @@ def question_page(qdf: pd.DataFrame):
             st.session_state["page"] = "loading"
         rerun()
 
-
 def loading_page():
     st.header("결과 분석")
     with st.spinner("감정 반응 분석 중…"):
         time.sleep(3.0)
     st.session_state["page"] = "result"
     rerun()
-
 
 def result_page(qdf: pd.DataFrame):
     if not st.session_state.get("saved"):
@@ -298,7 +271,6 @@ def result_page(qdf: pd.DataFrame):
     st.write(f"당신의 점수: **{score} / 15**")
     st.subheader(f"결과 유형: **{rtype}**")
     
-
     st.markdown("---")
     st.markdown(
         """
@@ -328,7 +300,6 @@ def result_page(qdf: pd.DataFrame):
         if st.button("내 주변 사람들은 어떤 유형이 많을까?"):
             st.session_state["page"] = "stats"
             rerun()
-
 
 def stats_page():
     st.header("유형별 결과 현황")
@@ -381,7 +352,6 @@ def stats_page():
 
     st.altair_chart(chart, width="stretch")
 
-
     st.markdown("---")
 
     top = max(order, key=lambda k: int(counts.get(k, 0)))
@@ -398,19 +368,15 @@ def stats_page():
             st.session_state["page"] = "end"
             rerun()
 
-
 def end_page():
     st.header("종료")
     st.write("테스트가 종료되었습니다. 브라우저 탭을 닫으면 완전히 종료됩니다.")
     st.stop()
 
-
 def main():
     st.set_page_config(page_title="이별 극복 테스트", page_icon="💔", layout="centered")
     init()
     # apply_css()
-
-    
 
     qdf = load_questions(DB_PATH)
 
@@ -435,6 +401,6 @@ def main():
         reset("intro")
         rerun()
 
-
 if __name__ == "__main__":
+
     main()
